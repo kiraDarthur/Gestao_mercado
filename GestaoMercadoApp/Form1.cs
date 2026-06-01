@@ -293,5 +293,14 @@ namespace GestaoMercadoApp
             }
             caminhoImagemSelecionada = "";
         }
+
+        private void btnAbrirPesquisa_Click(object sender, EventArgs e)
+        {
+            // Criamos a janela que desenhaste antes
+            FormPesquisa telaPesquisa = new FormPesquisa();
+
+            // Abre a janela no ecrã de forma prioritária
+            telaPesquisa.ShowDialog();
+        }
     }
 }
