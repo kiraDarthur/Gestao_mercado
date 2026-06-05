@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Tempo de geração: 29-Maio-2026 às 23:23
+-- Tempo de geração: 05-Jun-2026 às 23:25
 -- Versão do servidor: 10.4.32-MariaDB
 -- versão do PHP: 8.2.12
 
@@ -48,28 +48,6 @@ INSERT INTO `categorias` (`id`, `nome`, `descricao`, `corredor`) VALUES
 -- --------------------------------------------------------
 
 --
--- Estrutura da tabela `detalhes_venda`
---
-
-CREATE TABLE `detalhes_venda` (
-  `id` int(11) NOT NULL,
-  `venda_id` int(11) DEFAULT NULL,
-  `produto_id` int(11) DEFAULT NULL,
-  `quantidade` int(11) NOT NULL,
-  `preco_unitario` decimal(10,2) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Extraindo dados da tabela `detalhes_venda`
---
-
-INSERT INTO `detalhes_venda` (`id`, `venda_id`, `produto_id`, `quantidade`, `preco_unitario`) VALUES
-(1, 1, 1, 2, 1.25),
-(2, 1, 4, 2, 0.89);
-
--- --------------------------------------------------------
-
---
 -- Estrutura da tabela `funcionarios`
 --
 
@@ -109,21 +87,9 @@ CREATE TABLE `produtos` (
 --
 
 INSERT INTO `produtos` (`id`, `nome`, `preco`, `stock`, `imagem_path`, `categoria_id`) VALUES
-(1, 'Arroz Carolino 1kg', 1.26, 120, '', 1),
-(2, 'Massa Esparguete 500g', 0.90, 200, '', 1),
-(3, 'Atum em Azeite 3x', 2.99, 85, '', 1),
-(4, 'Leite UHT Meio Gordo 1L', 0.89, 300, 'C:\\ImagensMercado\\leite.jpg', 2),
-(5, 'Queijo Flamengo Fatiado', 2.10, 45, 'C:\\ImagensMercado\\queijo.jpg', 2),
-(6, 'Água Mineral 1.5L', 0.35, 500, '', 3),
-(7, 'Sumo de Laranja 1L', 1.65, 110, 'C:\\ImagensMercado\\sumo_laranja.jpg', 3),
-(8, 'Peito de Frango 1kg', 5.99, 30, 'C:\\ImagensMercado\\frango.jpg', 4),
-(9, 'Detergente de Roupa 50D', 8.99, 40, 'C:\\ImagensMercado\\detergente.jpg', 5),
-(10, 'Papel Higiénico 12 Rolos', 3.15, 90, 'C:\\ImagensMercado\\papel_hig.jpg', 5),
-(11, '2132', 212.00, 1000, '', 4),
-(13, 'açucar', 1.00, 1000, '', 1),
-(14, 'arth', 123.00, 12, '', 2),
-(15, 'Arroz Carolino kg', 1.26, 120, 'C:\\Users\\F40784.FORMACAO\\Pictures\\chrono-trigger-group-portrait-yb319gdzkluhrpub.jpg', 1),
-(16, 'Arroz Carolino', 1.26, 120, 'C:\\Users\\F40784.FORMACAO\\Pictures\\1_9JuhzN4ogjP6QBICwX9loQ.jpg', 1);
+(2, 'Massa Esparguete 500g', 0.90, 200, 'C:\\Users\\F40784.FORMACAO\\Desktop\\PC_ARTHUR\\C#\\esparguete-napolitana-500-gr.jpg', 1),
+(3, 'Atum em Azeite 3x', 2.99, 85, 'C:\\Users\\F40784.FORMACAO\\Desktop\\PC_ARTHUR\\C#\\935217_7e04e9d96619efad4f9ecbad550224ba.png', 1),
+(17, 'Arroz Carolino 1kg', 1.26, 120, 'C:\\Users\\F40784.FORMACAO\\Desktop\\PC_ARTHUR\\C#\\CAROLINO_embalagem_1kg-1-e1709919993286.png', 1);
 
 -- --------------------------------------------------------
 
@@ -156,14 +122,6 @@ ALTER TABLE `categorias`
   ADD PRIMARY KEY (`id`);
 
 --
--- Índices para tabela `detalhes_venda`
---
-ALTER TABLE `detalhes_venda`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `venda_id` (`venda_id`),
-  ADD KEY `produto_id` (`produto_id`);
-
---
 -- Índices para tabela `funcionarios`
 --
 ALTER TABLE `funcionarios`
@@ -194,12 +152,6 @@ ALTER TABLE `categorias`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
--- AUTO_INCREMENT de tabela `detalhes_venda`
---
-ALTER TABLE `detalhes_venda`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
-
---
 -- AUTO_INCREMENT de tabela `funcionarios`
 --
 ALTER TABLE `funcionarios`
@@ -209,7 +161,7 @@ ALTER TABLE `funcionarios`
 -- AUTO_INCREMENT de tabela `produtos`
 --
 ALTER TABLE `produtos`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
 
 --
 -- AUTO_INCREMENT de tabela `vendas`
@@ -220,13 +172,6 @@ ALTER TABLE `vendas`
 --
 -- Restrições para despejos de tabelas
 --
-
---
--- Limitadores para a tabela `detalhes_venda`
---
-ALTER TABLE `detalhes_venda`
-  ADD CONSTRAINT `detalhes_venda_ibfk_1` FOREIGN KEY (`venda_id`) REFERENCES `vendas` (`id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `detalhes_venda_ibfk_2` FOREIGN KEY (`produto_id`) REFERENCES `produtos` (`id`) ON DELETE SET NULL;
 
 --
 -- Limitadores para a tabela `produtos`

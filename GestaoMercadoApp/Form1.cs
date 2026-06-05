@@ -18,12 +18,30 @@ namespace GestaoMercadoApp
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            // O ID continua bloqueado para escrita manual, pois o MySQL gera-o automaticamente
-            texID.ReadOnly = true;
-            texID.BackColor = SystemColors.InactiveCaption;
-
-            CarregarCategorias();
             AtualizarGrid();
+            CarregarCategorias();
+            LimparCampos();
+        }
+
+        // FUNÇÃO QUE CARREGA E AJUSTA A FOTO NO ECRÃ
+        private void ExibirImagem(string caminho)
+        {
+            try
+            {
+                if (!string.IsNullOrEmpty(caminho) && File.Exists(caminho))
+                {
+                    pictureBox1.SizeMode = PictureBoxSizeMode.Zoom; // Garante que a foto cabe no quadrado!
+                    pictureBox1.Image = Image.FromFile(caminho);
+                }
+                else
+                {
+                    pictureBox1.Image = null;
+                }
+            }
+            catch
+            {
+                pictureBox1.Image = null;
+            }
         }
 
         private void AtualizarGrid()
@@ -32,7 +50,7 @@ namespace GestaoMercadoApp
             {
                 using (MySqlConnection conexao = Conexao.ObterConexao())
                 {
-                    string query = @"SELECT p.id, p.nome, p.preco, p.stock, c.nome AS categoria, p.imagem_path 
+                    string query = @"SELECT p.id, p.nome, p.preco, p.stock, c.nome AS 'categoria', p.imagem_path
                                      FROM produtos p 
                                      LEFT JOIN categorias c ON p.categoria_id = c.id 
                                      ORDER BY p.id ASC";
@@ -45,7 +63,7 @@ namespace GestaoMercadoApp
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Erro ao carregar dados: " + ex.Message);
+                MessageBox.Show("Erro ao atualizar tabela: " + ex.Message);
             }
         }
 
@@ -56,17 +74,13 @@ namespace GestaoMercadoApp
                 using (MySqlConnection conexao = Conexao.ObterConexao())
                 {
                     string query = "SELECT id, nome FROM categorias ORDER BY nome ASC";
-                    MySqlCommand cmd = new MySqlCommand(query, conexao);
-
-                    MySqlDataAdapter da = new MySqlDataAdapter(cmd);
+                    MySqlDataAdapter adaptador = new MySqlDataAdapter(query, conexao);
                     DataTable dt = new DataTable();
-                    da.Fill(dt);
+                    adaptador.Fill(dt);
 
-                    comboBoxCategoria.DisplayMember = "nome";
-                    comboBoxCategoria.ValueMember = "id";
-                    comboBoxCategoria.DataSource = dt;
-
-                    comboBoxCategoria.SelectedIndex = -1;
+                    comboCategoria.DataSource = dt;
+                    comboCategoria.DisplayMember = "nome";
+                    comboCategoria.ValueMember = "id";
                 }
             }
             catch (Exception ex)
@@ -75,29 +89,37 @@ namespace GestaoMercadoApp
             }
         }
 
+        // O CLIQUE DA TABELA QUE ATIVA A FOTO E PREENCHE OS CAMPOS
+        private void dataGridView1_CellClick(object sender, DataGridViewCellEventArgs e)
+        {
+            if (e.RowIndex >= 0)
+            {
+                try
+                {
+                    DataGridViewRow linha = dataGridView1.Rows[e.RowIndex];
+
+                    texID.Text = linha.Cells["id"].Value?.ToString() ?? "";
+                    textNome.Text = linha.Cells["nome"].Value?.ToString() ?? "";
+                    textPreco.Text = linha.Cells["preco"].Value?.ToString() ?? "";
+                    textStock.Text = linha.Cells["stock"].Value?.ToString() ?? "";
+                    comboCategoria.Text = linha.Cells["categoria"].Value?.ToString() ?? "";
+
+                    // Pega o caminho exato da imagem armazenada na base de dados
+                    caminhoImagemSelecionada = linha.Cells["imagem_path"].Value?.ToString() ?? "";
+                    ExibirImagem(caminhoImagemSelecionada);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Erro ao selecionar item: " + ex.Message);
+                }
+            }
+        }
+
         private void btnAdicionar_Click(object sender, EventArgs e)
         {
-            // 1. Validar campos vazios obrigatórios
-            if (string.IsNullOrWhiteSpace(textNome.Text) || string.IsNullOrWhiteSpace(textPreco.Text) || comboBoxCategoria.SelectedValue == null)
+            if (string.IsNullOrEmpty(textNome.Text) || string.IsNullOrEmpty(textPreco.Text))
             {
-                MessageBox.Show("Por favor, preencha todos os campos obrigatórios (Nome, Preço e Categoria)!", "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
-
-            // [VALIDAÇÃO DE NÚMEROS NO NOME REMOVIDA] - Agora podes escrever "Coca-Cola 2L", "Arroz 1kg", etc.
-
-            // 2. Validação do Preço
-            string precoTexto = textPreco.Text.Replace(',', '.');
-            if (!double.TryParse(precoTexto, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out double preco) || preco < 0)
-            {
-                MessageBox.Show("O Preço introduzido é inválido! Não utilize letras e use valores positivos.", "Erro de Validação", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
-
-            // 3. Validação do Stock
-            if (!int.TryParse(textStock.Text, out int stock) || stock < 0)
-            {
-                MessageBox.Show("O Stock Inicial deve ser um número inteiro positivo!", "Erro de Validação", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Preencha o Nome e o Preço!");
                 return;
             }
 
@@ -105,18 +127,17 @@ namespace GestaoMercadoApp
             {
                 using (MySqlConnection conexao = Conexao.ObterConexao())
                 {
-                    string query = @"INSERT INTO produtos (nome, preco, stock, imagem_path, categoria_id) 
-                                   VALUES (@nome, @preco, @stock, @imagem, @catId)";
-
+                    string query = "INSERT INTO produtos (nome, preco, stock, categoria_id, imagem_path) VALUES (@nome, @preco, @stock, @catId, @img)";
                     MySqlCommand cmd = new MySqlCommand(query, conexao);
+
                     cmd.Parameters.AddWithValue("@nome", textNome.Text.Trim());
-                    cmd.Parameters.AddWithValue("@preco", preco);
-                    cmd.Parameters.AddWithValue("@stock", stock);
-                    cmd.Parameters.AddWithValue("@imagem", caminhoImagemSelecionada);
-                    cmd.Parameters.AddWithValue("@catId", comboBoxCategoria.SelectedValue);
+                    cmd.Parameters.AddWithValue("@preco", decimal.Parse(textPreco.Text.Replace(',', '.')));
+                    cmd.Parameters.AddWithValue("@stock", string.IsNullOrEmpty(textStock.Text) ? 0 : int.Parse(textStock.Text));
+                    cmd.Parameters.AddWithValue("@catId", comboCategoria.SelectedValue);
+                    cmd.Parameters.AddWithValue("@img", caminhoImagemSelecionada);
 
                     cmd.ExecuteNonQuery();
-                    MessageBox.Show("Produto adicionado com sucesso!", "Sucesso", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    MessageBox.Show("Produto adicionado!");
 
                     AtualizarGrid();
                     LimparCampos();
@@ -124,7 +145,7 @@ namespace GestaoMercadoApp
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Erro ao inserir na base de dados: " + ex.Message);
+                MessageBox.Show("Erro ao adicionar: " + ex.Message);
             }
         }
 
@@ -132,28 +153,7 @@ namespace GestaoMercadoApp
         {
             if (string.IsNullOrEmpty(texID.Text))
             {
-                MessageBox.Show("Selecione um produto na tabela para editar!", "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
-
-            if (string.IsNullOrWhiteSpace(textNome.Text) || string.IsNullOrWhiteSpace(textPreco.Text) || comboBoxCategoria.SelectedValue == null)
-            {
-                MessageBox.Show("Por favor, preencha o Nome, o Preço e a Categoria!", "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
-
-            // [VALIDAÇÃO DE NÚMEROS NO NOME REMOVIDA] - Agora podes editar para nomes com números.
-
-            string precoTexto = textPreco.Text.Replace(',', '.');
-            if (!double.TryParse(precoTexto, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out double preco) || preco < 0)
-            {
-                MessageBox.Show("O Preço introduzido é inválido!", "Erro de Validação", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
-
-            if (!int.TryParse(textStock.Text, out int stock) || stock < 0)
-            {
-                MessageBox.Show("O Stock deve ser um número inteiro positivo!", "Erro de Validação", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Selecione um produto para editar!");
                 return;
             }
 
@@ -161,19 +161,18 @@ namespace GestaoMercadoApp
             {
                 using (MySqlConnection conexao = Conexao.ObterConexao())
                 {
-                    string query = @"UPDATE produtos SET nome=@nome, preco=@preco, stock=@stock, 
-                                     imagem_path=@imagem, categoria_id=@catId WHERE id=@id";
-
+                    string query = "UPDATE produtos SET nome=@nome, preco=@preco, stock=@stock, categoria_id=@catId, imagem_path=@img WHERE id=@id";
                     MySqlCommand cmd = new MySqlCommand(query, conexao);
+
                     cmd.Parameters.AddWithValue("@id", texID.Text);
                     cmd.Parameters.AddWithValue("@nome", textNome.Text.Trim());
-                    cmd.Parameters.AddWithValue("@preco", preco);
-                    cmd.Parameters.AddWithValue("@stock", stock);
-                    cmd.Parameters.AddWithValue("@imagem", caminhoImagemSelecionada);
-                    cmd.Parameters.AddWithValue("@catId", comboBoxCategoria.SelectedValue);
+                    cmd.Parameters.AddWithValue("@preco", decimal.Parse(textPreco.Text.Replace(',', '.')));
+                    cmd.Parameters.AddWithValue("@stock", int.Parse(textStock.Text));
+                    cmd.Parameters.AddWithValue("@catId", comboCategoria.SelectedValue);
+                    cmd.Parameters.AddWithValue("@img", caminhoImagemSelecionada);
 
                     cmd.ExecuteNonQuery();
-                    MessageBox.Show("Produto updated com sucesso!", "Sucesso", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    MessageBox.Show("Produto atualizado!");
 
                     AtualizarGrid();
                     LimparCampos();
@@ -189,32 +188,44 @@ namespace GestaoMercadoApp
         {
             if (string.IsNullOrEmpty(texID.Text))
             {
-                MessageBox.Show("Selecione um produto na tabela para eliminar!", "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Selecione um produto para eliminar!");
                 return;
             }
 
-            DialogResult resultado = MessageBox.Show("Deseja eliminar este artigo definitivamente?", "Confirmar", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
-            if (resultado == DialogResult.No) return;
-
-            try
+            if (MessageBox.Show("Deseja eliminar este produto?", "Confirmar", MessageBoxButtons.YesNo) == DialogResult.Yes)
             {
-                using (MySqlConnection conexao = Conexao.ObterConexao())
+                try
                 {
-                    string query = "DELETE FROM produtos WHERE id=@id";
-                    MySqlCommand cmd = new MySqlCommand(query, conexao);
-                    cmd.Parameters.AddWithValue("@id", texID.Text);
+                    using (MySqlConnection conexao = Conexao.ObterConexao())
+                    {
+                        string query = "DELETE FROM produtos WHERE id=@id";
+                        MySqlCommand cmd = new MySqlCommand(query, conexao);
+                        cmd.Parameters.AddWithValue("@id", texID.Text);
 
-                    cmd.ExecuteNonQuery();
-                    MessageBox.Show("Produto eliminado com sucesso!", "Sucesso", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        cmd.ExecuteNonQuery();
+                        MessageBox.Show("Produto eliminado!");
 
-                    AtualizarGrid();
-                    LimparCampos();
+                        AtualizarGrid();
+                        LimparCampos();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Erro ao eliminar: " + ex.Message);
                 }
             }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Erro ao eliminar: " + ex.Message);
-            }
+        }
+
+        private void btnPesquisar_Click(object sender, EventArgs e)
+        {
+            FormPesquisa telaPesquisa = new FormPesquisa();
+            telaPesquisa.ShowDialog();
+        }
+
+        private void btnHistorico_Click(object sender, EventArgs e)
+        {
+            FormHistorico telaHistorico = new FormHistorico();
+            telaHistorico.ShowDialog();
         }
 
         private void btnCarregarFoto_Click(object sender, EventArgs e)
@@ -222,58 +233,11 @@ namespace GestaoMercadoApp
             using (OpenFileDialog ofd = new OpenFileDialog())
             {
                 ofd.Filter = "Imagens (*.jpg;*.jpeg;*.png)|*.jpg;*.jpeg;*.png";
-                ofd.Title = "Selecione a foto do produto";
-
                 if (ofd.ShowDialog() == DialogResult.OK)
                 {
                     caminhoImagemSelecionada = ofd.FileName;
-
-                    if (pictureBox1.Image != null)
-                    {
-                        pictureBox1.Image.Dispose();
-                    }
-
-                    pictureBox1.Image = Image.FromFile(caminhoImagemSelecionada);
-                    pictureBox1.SizeMode = PictureBoxSizeMode.Zoom;
-                }
-            }
-        }
-
-        private void dataGridView1_CellClick(object sender, DataGridViewCellEventArgs e)
-        {
-            if (e.RowIndex >= 0)
-            {
-                DataGridViewRow row = dataGridView1.Rows[e.RowIndex];
-                texID.Text = row.Cells["id"].Value.ToString();
-                textNome.Text = row.Cells["nome"].Value.ToString();
-                textPreco.Text = row.Cells["preco"].Value.ToString();
-                textStock.Text = row.Cells["stock"].Value.ToString();
-
-                if (row.Cells["categoria"].Value != null)
-                {
-                    comboBoxCategoria.Text = row.Cells["categoria"].Value.ToString();
-                }
-
-                if (row.Cells["imagem_path"].Value != null)
-                {
-                    string imgPath = row.Cells["imagem_path"].Value.ToString();
-
-                    if (pictureBox1.Image != null)
-                    {
-                        pictureBox1.Image.Dispose();
-                        pictureBox1.Image = null;
-                    }
-
-                    if (!string.IsNullOrEmpty(imgPath) && File.Exists(imgPath))
-                    {
-                        pictureBox1.Image = Image.FromFile(imgPath);
-                        pictureBox1.SizeMode = PictureBoxSizeMode.Zoom;
-                        caminhoImagemSelecionada = imgPath;
-                    }
-                    else
-                    {
-                        caminhoImagemSelecionada = "";
-                    }
+                    ExibirImagem(caminhoImagemSelecionada); // Mostra logo no ecrã ao escolher
+                    MessageBox.Show("Foto associada com sucesso!");
                 }
             }
         }
@@ -284,23 +248,9 @@ namespace GestaoMercadoApp
             textNome.Clear();
             textPreco.Clear();
             textStock.Clear();
-            comboBoxCategoria.SelectedIndex = -1;
-
-            if (pictureBox1.Image != null)
-            {
-                pictureBox1.Image.Dispose();
-                pictureBox1.Image = null;
-            }
             caminhoImagemSelecionada = "";
-        }
-
-        private void btnAbrirPesquisa_Click(object sender, EventArgs e)
-        {
-            // Criamos a janela que desenhaste antes
-            FormPesquisa telaPesquisa = new FormPesquisa();
-
-            // Abre a janela no ecrã de forma prioritária
-            telaPesquisa.ShowDialog();
+            pictureBox1.Image = null;
+            if (comboCategoria.Items.Count > 0) comboCategoria.SelectedIndex = 0;
         }
     }
 }

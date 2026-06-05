@@ -102,6 +102,12 @@
     <Compile Include="Form1.Designer.cs">
       <DependentUpon>Form1.cs</DependentUpon>
     </Compile>
+    <Compile Include="FormHistorico.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FormHistorico.Designer.cs">
+      <DependentUpon>FormHistorico.cs</DependentUpon>
+    </Compile>
     <Compile Include="FormPesquisa.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -112,6 +118,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FormHistorico.resx">
+      <DependentUpon>FormHistorico.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="FormPesquisa.resx">
       <DependentUpon>FormPesquisa.cs</DependentUpon>

@@ -24,7 +24,7 @@
             this.textNome = new System.Windows.Forms.TextBox();
             this.textPreco = new System.Windows.Forms.TextBox();
             this.textStock = new System.Windows.Forms.TextBox();
-            this.comboBoxCategoria = new System.Windows.Forms.ComboBox();
+            this.comboCategoria = new System.Windows.Forms.ComboBox();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.btnCarregarFoto = new System.Windows.Forms.Button();
             this.btnAdicionar = new System.Windows.Forms.Button();
@@ -32,6 +32,7 @@
             this.btnEliminar = new System.Windows.Forms.Button();
             this.dataGridView1 = new System.Windows.Forms.DataGridView();
             this.btnAbrirPesquisa = new System.Windows.Forms.Button();
+            this.btnHistorico = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
             this.SuspendLayout();
@@ -109,13 +110,13 @@
             this.textStock.Size = new System.Drawing.Size(100, 20);
             this.textStock.TabIndex = 8;
             // 
-            // comboBoxCategoria
+            // comboCategoria
             // 
-            this.comboBoxCategoria.FormattingEnabled = true;
-            this.comboBoxCategoria.Location = new System.Drawing.Point(225, 167);
-            this.comboBoxCategoria.Name = "comboBoxCategoria";
-            this.comboBoxCategoria.Size = new System.Drawing.Size(203, 21);
-            this.comboBoxCategoria.TabIndex = 9;
+            this.comboCategoria.FormattingEnabled = true;
+            this.comboCategoria.Location = new System.Drawing.Point(225, 167);
+            this.comboCategoria.Name = "comboCategoria";
+            this.comboCategoria.Size = new System.Drawing.Size(203, 21);
+            this.comboCategoria.TabIndex = 9;
             // 
             // pictureBox1
             // 
@@ -124,6 +125,7 @@
             this.pictureBox1.Size = new System.Drawing.Size(209, 207);
             this.pictureBox1.TabIndex = 10;
             this.pictureBox1.TabStop = false;
+       
             // 
             // btnCarregarFoto
             // 
@@ -182,13 +184,24 @@
             this.btnAbrirPesquisa.TabIndex = 16;
             this.btnAbrirPesquisa.Text = "Pesquisar ";
             this.btnAbrirPesquisa.UseVisualStyleBackColor = true;
-            this.btnAbrirPesquisa.Click += new System.EventHandler(this.btnAbrirPesquisa_Click);
+            this.btnAbrirPesquisa.Click += new System.EventHandler(this.btnPesquisar_Click);
+            // 
+            // btnHistorico
+            // 
+            this.btnHistorico.Location = new System.Drawing.Point(479, 240);
+            this.btnHistorico.Name = "btnHistorico";
+            this.btnHistorico.Size = new System.Drawing.Size(75, 35);
+            this.btnHistorico.TabIndex = 17;
+            this.btnHistorico.Text = "Histórico Vendas";
+            this.btnHistorico.UseVisualStyleBackColor = true;
+            this.btnHistorico.Click += new System.EventHandler(this.btnHistorico_Click);
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(850, 650);
+            this.Controls.Add(this.btnHistorico);
             this.Controls.Add(this.btnAbrirPesquisa);
             this.Controls.Add(this.dataGridView1);
             this.Controls.Add(this.btnEliminar);
@@ -196,7 +209,7 @@
             this.Controls.Add(this.btnAdicionar);
             this.Controls.Add(this.btnCarregarFoto);
             this.Controls.Add(this.pictureBox1);
-            this.Controls.Add(this.comboBoxCategoria);
+            this.Controls.Add(this.comboCategoria);
             this.Controls.Add(this.textStock);
             this.Controls.Add(this.textPreco);
             this.Controls.Add(this.textNome);
@@ -225,7 +238,7 @@
         private System.Windows.Forms.TextBox textNome;
         private System.Windows.Forms.TextBox textPreco;
         private System.Windows.Forms.TextBox textStock;
-        private System.Windows.Forms.ComboBox comboBoxCategoria;
+        private System.Windows.Forms.ComboBox comboCategoria;
         private System.Windows.Forms.PictureBox pictureBox1;
         private System.Windows.Forms.Button btnCarregarFoto;
         private System.Windows.Forms.Button btnAdicionar;
@@ -233,5 +246,6 @@
         private System.Windows.Forms.Button btnEliminar;
         private System.Windows.Forms.DataGridView dataGridView1;
         private System.Windows.Forms.Button btnAbrirPesquisa;
+        private System.Windows.Forms.Button btnHistorico;
     }
 }
